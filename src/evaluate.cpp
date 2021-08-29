@@ -81,9 +81,11 @@ namespace Eval {
         return;
 
     string eval_file = string(Options["EvalFile"]);
-
     if (eval_file_loaded == eval_file)
         return;
+
+    if (eval_file.empty())
+        eval_file = EvalFileDefaultName;
 
 #if !defined(NNUE_EMBEDDING_OFF)
     #if defined(DEFAULT_NNUE_DIRECTORY)
@@ -128,16 +130,16 @@ namespace Eval {
   void NNUE::verify() {
 
     string eval_file = string(Options["EvalFile"]);
+    if (eval_file.empty())
+        eval_file = EvalFileDefaultName;
 
     if (useNNUE && eval_file_loaded != eval_file)
     {
-        UCI::OptionsMap defaults;
-        UCI::init(defaults);
 
-        string msg1 = "If the UCI option \"Use NNUE Evaluation\" is set to true, network evaluation parameters compatible with the engine must be available.";
+        string msg1 = "If the UCI option \"Use NNUE\" is set to true, network evaluation parameters compatible with the engine must be available.";
         string msg2 = "The option is set to true, but the network file " + eval_file + " was not loaded successfully.";
         string msg3 = "The UCI option EvalFile might need to specify the full path, including the directory name, to the network file.";
-        string msg4 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + string(defaults["EvalFile"]);
+        string msg4 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + std::string(EvalFileDefaultName);
         string msg5 = "The engine will be terminated now.";
 
         sync_cout << "info string ERROR: " << msg1 << sync_endl;
@@ -148,6 +150,11 @@ namespace Eval {
 
         exit(EXIT_FAILURE);
     }
+
+    if (useNNUE)
+        sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;
+    else
+        sync_cout << "info string classical evaluation enabled" << sync_endl;
   }
 }
 
@@ -1144,14 +1151,14 @@ Value Eval::evaluate(const Position& pos) {
       }
       else
       {
-          // If there is PSQ imbalance we use the classical eval, but we switch to
-          // NNUE eval faster when shuffling or if the material on the board is high.
-          int r50 = pos.rule50_count();
-          Value psq = Value(abs(eg_value(pos.psq_score())));
-          bool classical = psq * 5 > (850 + pos.non_pawn_material() / 64) * (5 + r50);
+      // If there is PSQ imbalance we use the classical eval, but we switch to
+      // NNUE eval faster when shuffling or if the material on the board is high.
+      int r50 = pos.rule50_count();
+      Value psq = Value(abs(eg_value(pos.psq_score())));
+      bool classical = psq * 5 > (850 + pos.non_pawn_material() / 64) * (5 + r50);
 
-          v = classical ? Evaluation<NO_TRACE>(pos).value()  // classical
-                        : adjusted_NNUE();                   // NNUE
+      v = classical ? Evaluation<NO_TRACE>(pos).value()  // classical
+                    : adjusted_NNUE();                   // NNUE
       }
   }
 

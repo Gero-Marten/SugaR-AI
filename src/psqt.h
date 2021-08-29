@@ -16,7 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #ifndef PSQT_H_INCLUDED
 #define PSQT_H_INCLUDED
 

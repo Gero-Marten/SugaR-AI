@@ -124,7 +124,14 @@ public:
 
     static Logger l;
 
-    if (!fname.empty() && !l.file.is_open())
+    if (l.file.is_open())
+    {
+        cout.rdbuf(l.out.buf);
+        cin.rdbuf(l.in.buf);
+        l.file.close();
+    }
+
+    if (!fname.empty())
     {
         l.file.open(fname, ifstream::out);
 
@@ -136,12 +143,6 @@ public:
 
         cin.rdbuf(&l.in);
         cout.rdbuf(&l.out);
-    }
-    else if (fname.empty() && l.file.is_open())
-    {
-        cout.rdbuf(l.out.buf);
-        cin.rdbuf(l.in.buf);
-        l.file.close();
     }
   }
 };
@@ -244,7 +245,7 @@ string engine_info(bool to_uci) {
   string month, day, year;
   stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 
-  ss << "SugaR AI 2.30 " << Version << setfill('0');
+  ss << "SugaR AI 2.40 " << Version << setfill('0');
 
   ss << (to_uci  ? "\nid author ": " by ")
      << "Stockfish Team, Marco Zerbinati, Khalid Omar";
