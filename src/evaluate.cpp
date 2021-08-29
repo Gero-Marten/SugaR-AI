@@ -65,6 +65,8 @@ namespace Eval {
   bool useNNUE;
   bool useClassical;
   string eval_file_loaded = "None";
+  int NNUE::MaterialisticEvaluationStrategy = 0;
+  int NNUE::PositionalEvaluationStrategy = 0;
 
   /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
   /// receives a UCI command "setoption name EvalFile value nn-[a-z0-9]{12}.nnue"
@@ -1151,14 +1153,14 @@ Value Eval::evaluate(const Position& pos) {
       }
       else
       {
-      // If there is PSQ imbalance we use the classical eval, but we switch to
-      // NNUE eval faster when shuffling or if the material on the board is high.
-      int r50 = pos.rule50_count();
-      Value psq = Value(abs(eg_value(pos.psq_score())));
-      bool classical = psq * 5 > (850 + pos.non_pawn_material() / 64) * (5 + r50);
-
-      v = classical ? Evaluation<NO_TRACE>(pos).value()  // classical
-                    : adjusted_NNUE();                   // NNUE
+          // If there is PSQ imbalance we use the classical eval, but we switch to
+          // NNUE eval faster when shuffling or if the material on the board is high.
+          int r50 = pos.rule50_count();
+          Value psq = Value(abs(eg_value(pos.psq_score())));
+          bool classical = psq * 5 > (850 + pos.non_pawn_material() / 64) * (5 + r50);
+          
+          v = classical ? Evaluation<NO_TRACE>(pos).value()  // classical
+                        : adjusted_NNUE();                   // NNUE
       }
   }
 
@@ -1224,7 +1226,7 @@ std::string Eval::trace(Position& pos) {
   ss << "\nClassical evaluation   " << to_cp(v) << " (white side)\n";
   if (Eval::useNNUE)
   {
-      v = NNUE::evaluate(pos, false);
+      v = NNUE::evaluate(pos, true);
       v = pos.side_to_move() == WHITE ? v : -v;
       ss << "NNUE evaluation        " << to_cp(v) << " (white side)\n";
   }

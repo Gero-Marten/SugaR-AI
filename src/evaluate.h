@@ -45,6 +45,9 @@ namespace Eval {
 
   namespace NNUE {
 
+    extern int MaterialisticEvaluationStrategy;
+    extern int PositionalEvaluationStrategy;
+
     std::string trace(Position& pos);
     Value evaluate(const Position& pos, bool adjusted = false);
 
